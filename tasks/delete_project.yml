@@ -1,0 +1,13 @@
+---
+
+- name: Log in using service account
+  command: "oc  login {{ ocp_uri }} --token={{ ocp_token }}"
+
+
+- name: Remove projects
+  command: "oc delete project {{ tenant_name | lower | replace('_', '-') }}-{{ item.name | lower | replace('_', '-') }} "
+  with_items: "{{ projects }}" 
+
+
+- name: Logout of service account 
+  command: "oc logout"

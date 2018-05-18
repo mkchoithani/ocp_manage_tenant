@@ -1,0 +1,26 @@
+---
+- name: Log in using service account 
+  command: "oc login {{ ocp_uri }} --token={{ ocp_token }}"
+
+- name: Get project list
+  command: "{{ oc }} get projects -o name"
+  register: projectslist
+
+- name: Remove old quota
+  command: "oc delete quota {{ quota_name }} "
+  when: modify_quota | lower =="true"
+
+- name: Add new large quota to projects
+  command: "oc create quota {{ new_quota_name }} --hard=cpu={{large_cpuquota}},memory={{large_memoryquota}}G,pods={{large_podsquota}},services={{large_servicesquota}},replicationcontrollers={{large_rcquota}},resourcequotas={{large_resquota}},secrets={{large_secretquota}} -n {{projectlists}}"
+  when: quota | lower == "large" 
+
+- name: Add new medium quota to projects
+  command: "oc create quota {{ quota_name }} --hard=cpu={{medium_cpuquota}},memory={{medium_memoryquota}}G,pods={{medium_podsquota}},services={{medium_servicesquota}},replicationcontrollers={{medium_rcquota}},resourcequotas={{large_resquota}},secrets={{large_secretquota}} -n {{projectlists}}"
+ when: quota | lower == "medium" 
+
+- name: Add new small quota to projects
+  command: "oc create quota {{ quota_name }} --hard=cpu={{small_cpuquota}},memory={{small_memoryquota}}G,pods={{small_podsquota}},services={{small_servicesquota}},replicationcontrollers={{small_rcquota}},resourcequotas={{small_resquota}},secrets={{small_secretquota}} -n {{projectlists}}"
+  when: quota | lower == "small" 
+
+- name: Logout of service account 
+  command: "oc logout"

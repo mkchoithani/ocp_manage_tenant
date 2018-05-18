@@ -1,0 +1,19 @@
+---
+
+- name: Log in using service account
+  command: "oc  login {{ ocp_uri }} --token={{ ocp_token }}"
+
+- name: Get project list
+  command: "oc get projects -o name"
+  register: projects
+
+- set_fact:
+    projectlist: "{{ projects.stdout_lines | select('match', '^(projects/){{tenant_name}}*') | list }}"
+
+- name: Remove projects or decommission tenant
+  command: "oc delete project {{item[9:]}} "
+  with_items: "{{projectlist}}"
+
+
+- name: Logout of service account 
+  command: "oc logout"
